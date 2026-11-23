@@ -1,6 +1,6 @@
 ---
 name: safe-change
-description: The procedure for changing anything that already exists and matters (a server, service, config, database, shared folder, deployed site, user account or data): investigate, check dependents, back up, preview, change, verify, document, with a rollback ready. Use before modifying any live or existing system.
+description: The procedure for changing anything that already exists and matters (a server, service, config, database, shared folder, deployed site, user account or data). Investigate, check dependents, back up, preview, change, verify and document, with a rollback ready. Use before modifying any live or existing system.
 argument-hint: "<the change>"
 ---
 

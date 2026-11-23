@@ -17,6 +17,11 @@ for f in "$repo"/skills/*/SKILL.md; do
   [[ ! "$name" =~ ^[a-z0-9-]{1,64}$ ]] && problems+=("name has invalid characters or is too long")
   [[ -z "$desc" ]] && problems+=("no description")
   (( ${#desc} > 1024 )) && problems+=("description is ${#desc} characters (max 1024)")
+  # A ': ' or ' #' inside an unquoted value breaks strict YAML parsers (VS Code reports
+  # "Nested mappings are not allowed in compact mappings").
+  if [[ ! "$desc" =~ ^[\"\'] ]] && [[ "$desc" == *": "* || "$desc" == *" #"* ]]; then
+    problems+=("description has ': ' or ' #' unquoted (invalid YAML); reword or quote it")
+  fi
   if (( ${#problems[@]} )); then echo "FAIL $dir: ${problems[*]}"; fail=1; else echo "ok   $dir (${#desc} chars)"; fi
 done
 exit $fail

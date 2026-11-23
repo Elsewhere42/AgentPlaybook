@@ -36,3 +36,10 @@ Known gotchas to carry from session to session. Add an entry whenever something 
 - **What happened:** On Windows, the second `install.ps1 -Mode Execute` against a test profile rewrote `copilot-instructions.md` and made a backup, instead of saying "already current".
 - **Cause:** The pattern takes the line break before the block, if any, and the replacement always put one back. A block at the top of the file has none, so the rerun added one. Later runs would have settled, but every first rerun made a needless backup.
 - **Next time:** When replacing a matched block, put back exactly what was taken. Test reruns as well as first runs (docs/Verify.md does).
+
+## L-004: A colon in an unquoted skill description broke YAML parsing
+
+- **Date:** 2026-11-22
+- **What happened:** VS Code's Markdown preview reported "Nested mappings are not allowed in compact mappings" on `skills/safe-change/SKILL.md`, and `tools/check-skills.sh` had passed it.
+- **Cause:** The description held `): investigate`. In an unquoted YAML value, `: ` starts a new key, so strict parsers reject it. The checker read the line with `sed` and never parsed it as YAML.
+- **Next time:** Keep descriptions free of `: ` and ` #`, or quote them. The checker now flags both.
