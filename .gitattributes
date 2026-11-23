@@ -1,0 +1,4 @@
+# Keep Linux line endings for files that tools parse (YAML frontmatter, bash), even in a Windows clone.
+*.md text eol=lf
+*.sh text eol=lf
+*.ps1 text eol=crlf
