@@ -80,7 +80,7 @@ The repository itself is the source; installed copies are rebuilt from it.
 
 | Item | Status |
 |---|---|
-| Publish the repository publicly | Pending: recreate the public repository from a fresh single-commit `main` (D-011) |
+| Publish the repository publicly | Done 2026-11-22: public repository recreated from a fresh single-commit `main` (D-011) |
 | `install.ps1` on Windows | Tested with a temporary test profile; verify on supported Windows installations |
 | Hooks on Windows (`install.ps1`) | Not started: hooks are bash; native Windows Claude Code would need PowerShell versions |
 | Guard in real use | New 2026-11-24; once installed, watch for false prompts (commit messages that mention `git push`, for example) and tune |
