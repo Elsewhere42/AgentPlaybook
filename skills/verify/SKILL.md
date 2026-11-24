@@ -6,7 +6,7 @@ argument-hint: "[what changed] | init"
 
 # Verify
 
-Argument: `$ARGUMENTS`. Use `init` to create or update the project's checklist without running it.
+Argument: `$ARGUMENTS`. Use `init` to create or update the project's checklist and fast check without running them.
 
 A successful command, a green build or a passing unit test is not proof that the thing works for the person who uses it. Verification checks the result **where it lands**: the live page, the file on the other machine, the service's real response, the backup's restored copy.
 
@@ -56,3 +56,18 @@ Run after any change of the matching kind. Each check says how to run it and wha
 ```
 
 Keep checks runnable by a person, not only by an agent. When a check turns out to be wrong or missing after an incident, fix the checklist in the same change.
+
+## Fast check (`init` sets this up too)
+
+The checklist is for proving a change where it lands. The fast check is different: a command that runs in seconds to a minute with no side effects (type check, lint, syntax check, unit tests), so it can run after every piece of work.
+
+1. Find what the project already has: a `check` or `test` script in `package.json`, `dotnet build`/`dotnet test`, `pytest`, `bash -n` and `shellcheck` for shell scripts, an HTML or link checker for static sites. Run it once and confirm it passes before adopting it. If nothing fits, propose the smallest useful check rather than none.
+2. Record it in the project instructions under "How to work on it" as `- **Check:** \`<command>\``, next to the Verify line pointing at `docs/Verify.md`.
+3. In Claude Code, with Agent Playbook's hooks installed, it can run automatically before each turn ends. Add this to the project's `.claude/settings.json` (create or merge; it's committed with the project):
+
+   ```json
+   {"hooks": {"Stop": [{"hooks": [{"type": "command", "timeout": 600,
+     "command": "\"$HOME/.claude/hooks/agent-playbook/run-check.sh\" '<command>'"}]}]}}
+   ```
+
+   The hook runs only when there are uncommitted non-Markdown changes, skips if nothing changed since the last pass, and hands failures back to the agent to fix. Never put a command with side effects (deploys, notifications, writes outside the repo) in it.

@@ -20,6 +20,7 @@ A portable set of working rules and skills for coding agents. Write them once he
 | [personalize](skills/personalize/SKILL.md) | Create or update a private profile of cross-project working preferences |
 | [pause](skills/pause/SKILL.md) | `/pause`: stop safely and leave a handoff |
 | [refresh](skills/refresh/SKILL.md) | `/refresh`: re-read the project docs from disk and report where things stand |
+| [parallel-work](skills/parallel-work/SKILL.md) | Run a task in its own git worktree and branch, then merge it back when verified |
 | [project-docs](skills/project-docs/SKILL.md) | `/project-docs`: add the project files, committed or kept local-only; at the start of every task, missing defaults trigger a setup offer unless declined |
 
 The agent never starts `personalize`, `pause` or `refresh` on its own. `project-docs` starts only after the user explicitly requests setup, approves the offer or invokes it.
@@ -80,6 +81,13 @@ bash AgentPlaybook/install/install.sh --execute
 ```
 
 This appends one line, `@~/.claude/agent-playbook.md`, to `~/.claude/CLAUDE.md` so Claude Code loads the core rules and local profile. Add `--target claude,copilot` if Copilot CLI is used there too.
+
+It also installs two Claude Code hooks into `~/.claude/hooks/agent-playbook/` (this needs `jq`; without it the installer skips this step and says so):
+
+- **Bash guard** ([hooks/guard-bash.sh](hooks/guard-bash.sh)), registered in `~/.claude/settings.json` for every project. Whatever the permission mode, it asks before `git push`, history rewrites (amend, rebase, reset --hard, filter-repo), commands that discard uncommitted work, broad recursive deletes and commands on another machine (ssh, sftp, scp, rsync). It refuses a commit whose changes contain a likely secret or a key or `.env` file. It's a safety net for mistakes, not a security boundary: a determined command can get past a pattern match.
+- **Fast check** ([hooks/run-check.sh](hooks/run-check.sh)), which each project turns on in its own `.claude/settings.json` with its own command. It runs that check before Claude finishes a turn and hands failures back to fix. See the [verify](skills/verify/SKILL.md) skill.
+
+The installer also sets `worktree.baseRef` to `"head"` (if unset) so `claude --worktree` branches from your local commits rather than the remote's, and adds `.claude/worktrees/` to your global git ignore file. The hooks are bash, so the Windows installer doesn't install them yet.
 
 ### Check it worked
 

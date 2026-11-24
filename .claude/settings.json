@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "timeout": 600,
+            "command": "\"$HOME/.claude/hooks/agent-playbook/run-check.sh\" 'bash tools/check-skills.sh && bash tools/test-hooks.sh'"
+          }
+        ]
+      }
+    ]
+  }
+}

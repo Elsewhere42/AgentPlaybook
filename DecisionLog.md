@@ -91,3 +91,25 @@ Every decision, with its reasoning. Newest entries go at the bottom. Don't edit 
 - **Status:** Active
 - **Decision:** The `personalized-preferences` branch lives only in a separate private repository, not in the public one. The public repository is recreated from the generic `main` as a single new commit, with no earlier history.
 - **Reasoning:** Repository visibility is per repository, so a branch in a public repository is public. Earlier commits held personal and machine-specific details; starting a new history removes them completely, which rewriting old commits can't guarantee. The cost is that the personalized branch no longer shares history with `main`, so `main` changes reach it by cherry-pick or rebase, not merge.
+
+## D-012: Enforce the riskiest rules with a Claude Code hook that asks
+
+- **Date:** 2026-11-24
+- **Status:** Active
+- **Decision:** A `PreToolUse` hook on the Bash tool returns "ask" for pushes, history rewrites, discarding uncommitted work, broad recursive deletes and commands on other machines, and "deny" for commits whose changes hold a likely secret or key file. The installer registers it in user settings so it covers every project.
+- **Reasoning:** The core rules were only text the agent had to remember, and in auto mode the permission classifier, not the user, decided most commands. A hook's "ask" reaches the user in every permission mode. Permission `ask` rules were the alternative, but they match command prefixes and miss `cd x && git push` or `git -C x push`. Pattern matching is a safety net against mistakes, not a security boundary, and the docs say so. "Ask" rather than "deny" for the risky-but-legitimate commands keeps the user in charge without blocking work.
+
+## D-013: Fast check runs from a Stop hook each project opts into
+
+- **Date:** 2026-11-24
+- **Status:** Active
+- **Decision:** `run-check.sh` is a generic Stop hook taking the check command as its argument. Each project registers it in its own committed `.claude/settings.json` with its own command, and records the same command as `Check:` in its instructions file. It runs only with uncommitted non-Markdown changes, skips if unchanged since the last pass, blocks the stop with the output on failure, and gives up (telling the user) if the same failure repeats with nothing changed.
+- **Reasoning:** Reading the command from the instructions file at stop time would run whatever any cloned repository's Markdown says, outside the permission system. Project settings hooks fall under Claude Code's workspace trust instead. A Stop hook rather than a PostToolUse hook runs the check once per turn instead of after every edit. The fingerprint and repeat-failure rule stop it rerunning needlessly or looping on a check the agent can't fix.
+
+## D-014: Parallel sessions use worktrees; worktrees start from the local HEAD
+
+- **Date:** 2026-11-24
+- **Status:** Active
+- **Decision:** Core rule 10 and the `parallel-work` skill: when another session may be in the same repository, work in a worktree and branch, merge back when verified, and deploy only from main. The installer sets `worktree.baseRef` to `head` if unset and git-ignores `.claude/worktrees/` globally.
+- **Reasoning:** Two sessions in one checkout edit and commit each other's files. Claude Code's default base is the remote's default branch, which lags behind local commits that haven't been pushed (pushing always needs approval), and in a repository without a remote it falls back to the local branch anyway. The worktree folder showed as untracked in a test repository, so it needs ignoring; a global ignore covers every repository without a commit in each.
+

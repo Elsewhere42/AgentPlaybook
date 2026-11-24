@@ -4,11 +4,11 @@ The current design. Update this when the design changes. The reasoning behind ea
 
 This file never holds secret values, only where they live.
 
-Last updated: 2026-11-22.
+Last updated: 2026-11-24.
 
 ## Overview
 
-One set of generic always-on rules plus eleven skills, written once and installed into each coding agent's user profile on every machine. Each user may add an optional private preferences file, which the installers merge into each tool's generated instructions.
+One set of generic always-on rules plus twelve skills and two Claude Code hooks, written once and installed into each coding agent's user profile on every machine. Each user may add an optional private preferences file, which the installers merge into each tool's generated instructions.
 
 | Path | What it is |
 |---|---|
@@ -18,9 +18,12 @@ One set of generic always-on rules plus eleven skills, written once and installe
 | `skills/personalize/SKILL.md` | Opt-in interview to create or update a local user profile |
 | `skills/script-modes/templates/Invoke-Change.ps1` | DryRun/Execute/Rollback PowerShell template |
 | `skills/project-docs/templates/` | AGENTS.md, DESIGN.md and log templates for other repos |
+| `hooks/guard-bash.sh` | Claude Code PreToolUse hook for Bash: asks before risky commands, refuses commits with likely secrets (D-012) |
+| `hooks/run-check.sh` | Claude Code Stop hook a project enables with its own fast check (D-013) |
 | `install/install.sh` | Installer for Linux, WSL, macOS |
 | `install/install.ps1` | Installer for Windows |
 | `tools/check-skills.sh` | Read-only frontmatter check |
+| `tools/test-hooks.sh` | Tests both hooks against temporary repos |
 | `docs/Verify.md` | Checks to run after a change |
 
 ### Skills
@@ -37,6 +40,7 @@ One set of generic always-on rules plus eleven skills, written once and installe
 | `personalize` | No, slash command only | Create or update optional local user preferences |
 | `pause` | No, slash command only | Safe stop and handoff |
 | `refresh` | No, slash command only | Re-read docs and report |
+| `parallel-work` | Yes | Own worktree and branch per task when sessions run in parallel; merge back when verified (D-014) |
 | `project-docs` | Yes, after user approval | Add project memory to a repo, shared or local-only; check for missing defaults at the start of each task and offer setup unless declined |
 
 ## Where each tool reads it
@@ -49,7 +53,7 @@ Checked against the vendors' docs on 2026-11-22 (L-002).
 | Copilot in VS Code | `~/.copilot/skills/` | `~/.copilot/instructions/agent-playbook.instructions.md`, `applyTo: "**"`, including the local user profile | `install.ps1` (Windows) or `install.sh --target copilot` |
 | Copilot in Visual Studio 2026 (18.5+) | `~/.copilot/skills/` (also reads `~/.claude/skills/` and `~/.agents/skills/`) | A marked block in `%USERPROFILE%\copilot-instructions.md`, including the local user profile | `install.ps1` |
 
-The installers create `%USERPROFILE%\.agent-playbook\user-profile.md` or `~/.agent-playbook/user-profile.md` from the template if missing. The file is never overwritten or removed by the installer. Updates merge its current text into generated tool instructions; uninstall leaves the profile in place. Installers copy files rather than linking them (D-002), default to DryRun (D-003), mark each installed skill folder with `.agent-playbook` and touch only marked folders, and back up any existing file they edit as `<file>.bak-<timestamp>`.
+The installers create `%USERPROFILE%\.agent-playbook\user-profile.md` or `~/.agent-playbook/user-profile.md` from the template if missing. The file is never overwritten or removed by the installer. Updates merge its current text into generated tool instructions; uninstall leaves the profile in place. `install.sh` (Claude target) also copies `hooks/*.sh` to `~/.claude/hooks/agent-playbook/`, registers the Bash guard as a `PreToolUse` entry in `~/.claude/settings.json` (it finds and replaces its own entries by that folder in the command, leaving others alone), sets `worktree.baseRef` to `head` if unset, and adds `.claude/worktrees/` to the global git ignore file. It needs `jq` and skips this with a message if it's missing. `install.ps1` doesn't install hooks yet. Installers copy files rather than linking them (D-002), default to DryRun (D-003), mark each installed skill folder with `.agent-playbook` and touch only marked folders, and back up any existing file they edit as `<file>.bak-<timestamp>`.
 
 ## Supported targets
 
@@ -77,6 +81,8 @@ The repository itself is the source; installed copies are rebuilt from it.
 |---|---|
 | Publish the repository publicly | Pending: recreate the public repository from a fresh single-commit `main` (D-011) |
 | `install.ps1` on Windows | Tested with a temporary test profile; verify on supported Windows installations |
+| Hooks on Windows (`install.ps1`) | Not started: hooks are bash; native Windows Claude Code would need PowerShell versions |
+| Guard in real use | New 2026-11-24; once installed, watch for false prompts (commit messages that mention `git push`, for example) and tune |
 | VS Code Copilot reading `~/.copilot/instructions/` | Documented for the Copilot harness; verify with an installation |
 
 ## Future ideas

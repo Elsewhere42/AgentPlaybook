@@ -18,7 +18,8 @@ Related projects (read by /refresh): [paths to sibling project folders, or delet
 ## How to work on it
 
 - **Run locally:** [Command]
-- **Test:** [Command]
+- **Check:** [Fast command with no side effects, such as type check, lint or unit tests; see the `verify` skill]
+- **Test:** [Command, if different from Check]
 - **Verify after a change:** [docs/Verify.md, or the checks to run]
 - **Deploy:** [Command, or see DESIGN.md. As which account?]
 - **Rollback:** [How to undo a deploy]

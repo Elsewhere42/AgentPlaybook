@@ -17,6 +17,8 @@ These rules are defaults, not assumptions about a user's identity, experience or
 7. **Follow the repository's commit policy.** Review the diff before committing. Ask before committing if the policy is unclear, and always ask before pushing, rewriting history (amend, rebase, reset, force), committing anything that might hold a secret or personal data, or removing files from history. (Skill: `self-review`.)
 8. **Ask before** restarting services, opening ports, changing network settings, touching shared or production systems, or doing anything public-facing or hard to reverse. Approval for one action doesn't carry over to the next.
 9. **Keep the project docs current**: what exists, why it was decided, and what went wrong. (See Project memory below.)
+10. **One session per checkout.** When another session may be working in the same repository, work in your own git worktree and branch, and merge back only when the work is verified. Deploy only from the main branch. (Skill: `parallel-work`.)
+11. **Keep the fast check green.** A project's instructions file can name a quick check (type check, lint, unit tests) that runs in seconds. Run it before saying work is done; where a hook runs it automatically, fix what it reports rather than working around it.
 
 ## Running commands safely
 
@@ -75,5 +77,6 @@ Run these by name (`/name` in Claude Code and Copilot chat), or let the agent pi
 | `pause` | Stop safely and leave a handoff |
 | `refresh` | Re-read the project docs and report where things stand |
 | `project-docs` | Add project memory files to a repo, committed or kept local-only |
+| `parallel-work` | Run a task in its own worktree and branch, then merge it back |
 
 `personalize`, `pause` and `refresh` only run when you type them; the agent never starts them on its own. The agent starts `project-docs` only after the user asks for it or accepts the setup offer.
