@@ -43,3 +43,17 @@ Known gotchas to carry from session to session. Add an entry whenever something 
 - **What happened:** VS Code's Markdown preview reported "Nested mappings are not allowed in compact mappings" on `skills/safe-change/SKILL.md`, and `tools/check-skills.sh` had passed it.
 - **Cause:** The description held `): investigate`. In an unquoted YAML value, `: ` starts a new key, so strict parsers reject it. The checker read the line with `sed` and never parsed it as YAML.
 - **Next time:** Keep descriptions free of `: ` and ` #`, or quote them. The checker now flags both.
+
+## L-005: A hook gets Claude Code's environment, which may not include the shell's Node
+
+- **Date:** 2026-11-24
+- **What happened:** A project's tests failed under the Stop hook with `'node:util' does not provide an export named 'styleText'`, but passed in an interactive terminal.
+- **Cause:** Claude Code had been started by a background service, which doesn't read `.bashrc`, so nvm never loaded and the system Node 18 came first on `PATH`. Hooks inherit whatever environment Claude Code was started with, and so do the agent's own shell commands.
+- **Next time:** Don't assume a hook sees the login shell's tools. `run-check.sh` now loads nvm's default Node (or the project's `.nvmrc`) when nvm is installed. Test hook commands with `env -i HOME=$HOME PATH=/usr/bin:/bin` to see the bare environment.
+
+## L-006: An unquoted `~` in a bash `case` pattern is tilde-expanded
+
+- **Date:** 2026-11-24
+- **What happened:** The guard's broad-delete check let `rm -rf ~/projects` through. The tests caught it.
+- **Cause:** In `case "$t" in ~|~/*)`, bash expands the unquoted `~` in the pattern to the home folder, so it never matched the literal text `~/projects` from the command. In the same loop, an unquoted `for t in $targets` glob-expanded `*` into file names.
+- **Next time:** Quote literal patterns (`'~'|'~/'*`) and turn globbing off (`set -f`) when splitting command text into words. Under `set -o pipefail`, don't test with `cmd | grep -q`: grep exits early, `cmd` gets SIGPIPE and the pipeline fails even on a match; capture the output first.
