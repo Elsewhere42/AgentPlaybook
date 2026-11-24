@@ -5,7 +5,7 @@ Run after any change of the matching kind.
 | When | Check | Command or steps | Pass looks like |
 |---|---|---|---|
 | Any skill change | Frontmatter valid | `bash tools/check-skills.sh` | Every line `ok` |
-| Any hook change | Hooks decide as expected | `bash tools/test-hooks.sh` | Every line `ok`, exit 0 |
+| Any hook change | Hooks and the syntax checker behave as expected | `bash tools/test-hooks.sh` (outside a sandbox that blocks `pwsh`'s profile folders, or the PowerShell case fails) | Every line `ok`, exit 0 |
 | Installer change (bash) | Hooks merge into settings without disturbing other entries, idempotently, and uninstall cleanly | `T=$(mktemp -d); mkdir $T/.claude; echo '{"model":"x","hooks":{"Stop":[{"hooks":[{"type":"command","command":"echo other"}]}]}}' > $T/.claude/settings.json; HOME=$T bash install/install.sh --execute; HOME=$T bash install/install.sh --execute; jq . $T/.claude/settings.json; HOME=$T bash install/install.sh --uninstall --execute; jq . $T/.claude/settings.json` | One `PreToolUse` Bash entry after two runs, `model` and the other Stop hook kept, `worktree.baseRef` `head`; after uninstall only the guard entry is gone |
 | After installing on a machine | Guard is live | New Claude Code session in a scratch repo, ask it to run `git push` | A permission prompt naming "Agent Playbook guard" |
 | Any change to distributed files | No personal or machine-specific details | `grep -rnE '(192\.168\.\|\b10\.[0-9]{1,3}\.[0-9]\|172\.(1[6-9]\|2[0-9]\|3[01])\.)' instructions skills install hooks` | No output |

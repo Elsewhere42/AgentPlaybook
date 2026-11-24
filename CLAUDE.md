@@ -14,7 +14,7 @@ A portable set of working rules and skills for coding agents: one source, instal
 
 ## How to work on it
 
-- **Check:** `bash tools/check-skills.sh && bash tools/test-hooks.sh` (skill frontmatter, and the hooks against temporary repos)
+- **Check:** `bash tools/check-skills.sh && bash tools/test-hooks.sh && bash hooks/check-syntax.sh` (skill frontmatter, the hooks against temporary repos, and syntax of every script)
 - **Install or update here:** `bash install/install.sh` (DryRun), then `bash install/install.sh --execute`
 - **Install on Windows:** see [README.md](README.md)
 - **Verify:** [docs/Verify.md](docs/Verify.md)

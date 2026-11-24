@@ -91,4 +91,29 @@ echo 'x=3' > "$T/app.sh"
 r="$(stop 'echo broke; exit 3' true)"
 [[ "$(printf '%s' "$r" | jq -r '.decision')" == block ]] && echo "ok   new change, still failing: blocks again" || { echo "FAIL after new change: $r"; fail=1; }
 
+echo "check-syntax.sh"
+syn="$repo/hooks/check-syntax.sh"
+C="$(mktemp -d)"; git -C "$C" init -q -b main
+printf 'echo ok\n' > "$C/a.sh"; printf 'x = 1\n' > "$C/a.py"; printf 'const a = 1;\n' > "$C/a.js"
+printf 'import x from "./a.js";\nexport const b = x;\n' > "$C/m.js"; printf '{"a": 1}\n' > "$C/a.json"
+printf '// comment\n{"compilerOptions": {}}\n' > "$C/tsconfig.json"; printf 'k: !secret v\nl: [1, 2]\n' > "$C/a.yaml"
+mkdir -p "$C/node_modules/x"; printf 'broken(\n' > "$C/node_modules/x/i.js"
+pwsh_ok=0; command -v pwsh >/dev/null 2>&1 && pwsh -NoProfile -NonInteractive -Command 1 >/dev/null 2>&1 && pwsh_ok=1
+[[ $pwsh_ok -eq 1 ]] && printf '$a = 1\n' > "$C/a.ps1"
+if (cd "$C" && bash "$syn" >/dev/null); then echo "ok   valid files pass (tsconfig comments, YAML tags, node_modules ignored)"; else echo "FAIL valid files:"; (cd "$C" && bash "$syn"); fail=1; fi
+for bad in 'b.sh:if then fi' 'b.py:def (' 'b.js:const = ;' 'c.js:export const = ;' 'b.json:{"a": }' 'b.yaml:a: [1, 2'; do
+  f="${bad%%:*}"; printf '%s\n' "${bad#*:}" > "$C/$f"
+  if out="$(cd "$C" && bash "$syn" 2>&1)"; then echo "FAIL broken $f not caught"; fail=1
+  elif printf '%s' "$out" | grep -q "FAIL $f"; then echo "ok   broken $f caught"; else echo "FAIL broken $f: wrong report: $out"; fail=1; fi
+  rm "$C/$f"
+done
+if [[ $pwsh_ok -eq 1 ]]; then
+  printf 'function f( {\n' > "$C/b.ps1"
+  out="$(cd "$C" && bash "$syn" 2>&1)"
+  if printf '%s\n' "$out" | grep -q 'FAIL b.ps1'; then echo "ok   broken b.ps1 caught"; else echo "FAIL broken b.ps1 not caught"; fail=1; fi
+else
+  echo "skip PowerShell cases: pwsh not usable here"
+fi
+rm -rf "$C"
+
 exit $fail

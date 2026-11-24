@@ -20,10 +20,11 @@ One set of generic always-on rules plus twelve skills and two Claude Code hooks,
 | `skills/project-docs/templates/` | AGENTS.md, DESIGN.md and log templates for other repos |
 | `hooks/guard-bash.sh` | Claude Code PreToolUse hook for Bash: asks before risky commands, refuses commits with likely secrets (D-012) |
 | `hooks/run-check.sh` | Claude Code Stop hook a project enables with its own fast check (D-013) |
+| `hooks/check-syntax.sh` | Read-only syntax check of every tracked or new file by type (shell, Python, JS, JSON, YAML, PowerShell); the fast check for script-and-config projects |
 | `install/install.sh` | Installer for Linux, WSL, macOS |
 | `install/install.ps1` | Installer for Windows |
 | `tools/check-skills.sh` | Read-only frontmatter check |
-| `tools/test-hooks.sh` | Tests both hooks against temporary repos |
+| `tools/test-hooks.sh` | Tests the hooks and `check-syntax.sh` against temporary repos |
 | `docs/Verify.md` | Checks to run after a change |
 
 ### Skills

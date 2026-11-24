@@ -61,7 +61,7 @@ Keep checks runnable by a person, not only by an agent. When a check turns out t
 
 The checklist is for proving a change where it lands. The fast check is different: a command that runs in seconds to a minute with no side effects (type check, lint, syntax check, unit tests), so it can run after every piece of work.
 
-1. Find what the project already has: a `check` or `test` script in `package.json`, `dotnet build`/`dotnet test`, `pytest`, `bash -n` and `shellcheck` for shell scripts, an HTML or link checker for static sites. Run it once and confirm it passes before adopting it. If nothing fits, propose the smallest useful check rather than none.
+1. Find what the project already has: a `check` or `test` script in `package.json`, `dotnet build`/`dotnet test`, `pytest`, `bash -n` and `shellcheck` for shell scripts, an HTML or link checker for static sites. For a repo of scripts and config with no tests, Agent Playbook installs `~/.claude/hooks/agent-playbook/check-syntax.sh`, which parses every shell, Python, JavaScript, JSON, YAML and PowerShell file without running them. Run it once and confirm it passes before adopting it. If nothing fits, propose the smallest useful check rather than none.
 2. Record it in the project instructions under "How to work on it" as `- **Check:** \`<command>\``, next to the Verify line pointing at `docs/Verify.md`.
 3. In Claude Code, with Agent Playbook's hooks installed, it can run automatically before each turn ends. Add this to the project's `.claude/settings.json` (create or merge; it's committed with the project):
 
